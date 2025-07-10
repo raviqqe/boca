@@ -5,11 +5,11 @@ on:
       - main
   pull_request:
 jobs:
-  lint:
+  clippy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
+      - uses: raviqqe/rust-cache@v1
       - run: cargo clippy -- -D warnings
   format:
     runs-on: ubuntu-latest
@@ -30,8 +30,13 @@ jobs:
       - uses: lycheeverse/lychee-action@v2
         with:
           fail: true
-  gherkin:
+  lint:
+    needs:
+      - clippy
+      - format
+      - readme
+      - spell_check
+    if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: go run github.com/raviqqe/gherkin-format@latest -check .
+      - run: for result in ${{ join(needs.*.result, ' ') }}; do [ $result = success ]; done

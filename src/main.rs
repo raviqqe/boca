@@ -1,5 +1,5 @@
-use std::time::Duration;
 use cucumber::{World as _, given, then, when};
+use std::time::Duration;
 use tokio::time::sleep;
 
 #[derive(Debug, Default, cucumber::World)]

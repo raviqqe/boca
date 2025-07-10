@@ -1,7 +1,7 @@
 version: 2
 builds:
-  - id: aruba
-    binary: aruba
+  - id: boca
+    binary: boca
     builder: rust
     command: build
     flags: --release

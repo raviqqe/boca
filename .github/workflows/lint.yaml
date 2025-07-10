@@ -23,12 +23,15 @@ jobs:
       - uses: streetsidesoftware/cspell-action@main
         with:
           files: "**/*.{md,rs,sh,toml}"
-  unused_dependencies:
+  readme:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: rustup install nightly
-      - uses: Swatinem/rust-cache@v2
-      - run: |
-          rustup run nightly cargo install cargo-udeps
-          cargo +nightly udeps
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          fail: true
+  gherkin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: go run github.com/raviqqe/gherkin-format@latest -check .

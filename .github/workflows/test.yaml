@@ -9,38 +9,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
-      - run: tools/build.sh
-      - run: git diff --exit-code
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: target/release/turtle
+      - uses: raviqqe/cargo-cache@v1
+      - run: cargo build
   unit_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
+      - uses: raviqqe/cargo-cache@v1
       - run: cargo test
   integration_test:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
-      - uses: actions/download-artifact@v4
-        with:
-          name: build
-          path: target/release
-      - run: chmod +x target/release/turtle
+      - uses: raviqqe/cargo-cache@v1
       - run: tools/integration_test.sh
-  integration_test_test:
+  coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
-      - uses: homebrew/actions/setup-homebrew@master
-      - run: brew install ninja
-      - run: mkdir -p target/release
-      - run: cp tools/turtle.sh target/release/turtle
-      - run: tools/integration_test.sh --tags 'not @turtle'
+      - uses: raviqqe/cargo-cache@v1
+      - run: tools/coverage.sh
+      - uses: codecov/codecov-action@v5
+        with:
+          files: lcov.info
+  test:
+    needs:
+      - build
+      - unit_test
+      - integration_test
+      - coverage
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: for result in ${{ join(needs.*.result, ' ') }}; do [ $result = success ]; done

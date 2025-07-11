@@ -1,6 +1,6 @@
 use cucumber::{World, gherkin::Step, given, then, when};
 use std::error::Error;
-use tokio::{fs::File, io::AsyncWriteExt, process::Command};
+use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 
 #[derive(Debug, Default, World)]
 struct CommandWorld {
@@ -13,7 +13,10 @@ async fn create_file(
     step: &Step,
     name: String,
 ) -> Result<(), Box<dyn Error>> {
-    File::open(name)
+    OpenOptions::default()
+        .create(true)
+        .write(true)
+        .open(name)
         .await?
         .write_all(&step.docstring.as_ref().expect("file content").as_bytes())
         .await?;

@@ -1,7 +1,6 @@
-use cucumber::{World, gherkin::Step, given, then, when};
-use std::error::Error;
+use cucumber::World;
+use std::path::Path;
 use tempfile::{TempDir, tempdir};
-use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 
 #[derive(Debug, World)]
 #[world(init = Self::new)]
@@ -16,5 +15,17 @@ impl CommandWorld {
             directory: tempdir().expect("test directory"),
             exit_status: None,
         }
+    }
+
+    pub fn directory(&self) -> &Path {
+        self.directory.path()
+    }
+
+    pub fn exit_status(&self) -> Option<i32> {
+        self.exit_status
+    }
+
+    pub fn set_exit_status(&mut self, status: Option<i32>) {
+        self.exit_status = status;
     }
 }

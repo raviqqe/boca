@@ -30,7 +30,7 @@ async fn create_file(
         .write(true)
         .open(world.directory.path().join(name))
         .await?
-        .write_all(&step.docstring.as_ref().expect("file content").as_bytes())
+        .write_all(step.docstring.as_ref().expect("file content").as_bytes())
         .await?;
 
     Ok(())
@@ -40,7 +40,7 @@ async fn create_file(
 async fn run_command(world: &mut CommandWorld, command: String) -> Result<(), Box<dyn Error>> {
     let command = command.split_whitespace().collect::<Vec<_>>();
 
-    let output = Command::new(&command[0])
+    let output = Command::new(command[0])
         .args(&command[1..])
         .output()
         .await?;

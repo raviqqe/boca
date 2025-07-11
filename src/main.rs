@@ -51,7 +51,7 @@ async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), 
     Ok(())
 }
 
-#[then(expr = "the {stdio} status should contain {string}")]
+#[then(expr = "the {stdio} should contain {string}")]
 async fn check_stdio(
     world: &mut CommandWorld,
     stdio: Stdio,

@@ -9,11 +9,12 @@ use world::CommandWorld;
 
 fn parse_string(string: &str) -> String {
     string
-        .replace("\\\\", "\\")
-        .replace("\\\"", "\"")
+        .replace("\\\\", "BACKSLASH")
         .replace("\\n", "\n")
         .replace("\\r", "\r")
         .replace("\\t", "\t")
+        .replace("\\\"", "\"")
+        .replace("BACKSLASH", "\\")
 }
 
 fn parse_docstring(string: &str) -> String {

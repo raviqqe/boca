@@ -68,7 +68,7 @@ mod tests {
     use std::path::Path;
 
     #[tokio::test]
-    async fn test() {
+    async fn run_features() {
         CommandWorld::run(Path::new("features")).await;
     }
 }

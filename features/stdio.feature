@@ -10,3 +10,11 @@ Feature: Standard I/O
   Scenario: Check stderr
     When I run `rm foo`
     Then the stderr should contain "file"
+
+  Scenario: Check stdout with a blank character
+    When I successfully run `echo foo`
+    Then the stdout should contain "\n"
+
+  Scenario: Check stdout with a blank character
+    When I successfully run `echo \\\\\\\\`
+    Then the stdout should contain exactly "\\\\"

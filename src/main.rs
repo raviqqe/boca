@@ -3,12 +3,23 @@ mod world;
 
 use cucumber::{World, gherkin::Step, given, then, when};
 use parameter::{CommandString, Exactly, Not, StdioName, StdioType, Successfully};
+use pretty_assertions::{assert_eq, assert_ne};
+use regex::{Captures, Regex};
 use std::{error::Error, str};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
 fn parse_string(string: &str) -> String {
-    string.replace("\\\\", "\\").replace("\\\"", "\"")
+    Regex::new(r#"\\([nrt"\\])"#)
+        .unwrap()
+        .replace_all(string, |captures: &Captures| match &captures[1] {
+            "n" => "\n".to_string(),
+            "r" => "\r".into(),
+            "t" => "\t".into(),
+            character @ ("\\" | "\"") => character.into(),
+            character => format!("\\{character}"),
+        })
+        .into()
 }
 
 fn parse_docstring(string: &str) -> String {
@@ -42,10 +53,8 @@ async fn run_command(
     successfully: Successfully,
     command_string: CommandString,
 ) -> Result<(), Box<dyn Error>> {
-    let command = command_string
-        .command()
-        .split_whitespace()
-        .collect::<Vec<_>>();
+    let command = parse_string(&parse_string(command_string.command()));
+    let command = command.split_whitespace().collect::<Vec<_>>();
 
     let output = Command::new(command[0])
         .args(&command[1..])
@@ -114,6 +123,7 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
     use std::path::Path;
 
     #[test]
@@ -124,6 +134,9 @@ mod tests {
         assert_eq!(parse_string("foo\\\\bar\\\\baz"), "foo\\bar\\baz");
         assert_eq!(parse_string("foo\\\\\\bar"), "foo\\\\bar");
         assert_eq!(parse_string("\\\""), "\"");
+        assert_eq!(parse_string("\\n"), "\n");
+        assert_eq!(parse_string("\\r"), "\r");
+        assert_eq!(parse_string("\\t"), "\t");
     }
 
     #[tokio::test]

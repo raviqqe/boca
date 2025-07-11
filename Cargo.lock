@@ -111,6 +111,7 @@ dependencies = [
  "derive_more 2.0.1",
  "memchr",
  "pretty_assertions",
+ "regex",
  "tempfile",
  "tokio",
 ]

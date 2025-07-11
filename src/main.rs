@@ -2,7 +2,7 @@ mod parameter;
 mod world;
 
 use cucumber::{World, gherkin::Step, given, then, when};
-use parameter::{CommandString, Exactly, StdioName, StdioType, Successfully};
+use parameter::{CommandString, Exactly, Not, StdioName, StdioType, Successfully};
 use std::{error::Error, str};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
@@ -55,9 +55,17 @@ async fn run_command(
     Ok(())
 }
 
-#[then(expr = "the exit status should be {int}")]
-async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), Box<dyn Error>> {
-    assert_eq!(world.exit_status(), Some(status));
+#[then(expr = "the exit status should {not}be {int}")]
+async fn check_exit_status(
+    world: &mut CommandWorld,
+    not: Not,
+    status: i32,
+) -> Result<(), Box<dyn Error>> {
+    if not.not() {
+        assert_ne!(world.exit_status(), Some(status))
+    } else {
+        assert_eq!(world.exit_status(), Some(status))
+    }
 
     Ok(())
 }

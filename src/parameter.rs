@@ -52,3 +52,13 @@ impl Exactly {
         self.0.trim() == "exactly"
     }
 }
+
+#[derive(Deref, FromStr, Parameter)]
+#[param(regex = r"not |", name = "not")]
+pub struct Not(String);
+
+impl Not {
+    pub fn not(&self) -> bool {
+        self.0.trim() == "not"
+    }
+}

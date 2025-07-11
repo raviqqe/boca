@@ -8,7 +8,7 @@ use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
 fn parse_string(string: &str) -> String {
-    string.replace("\\\\", "\\")
+    string.replace("\\\\", "\\").replace("\\\"", "\"")
 }
 
 fn parse_docstring(string: &str) -> String {
@@ -123,6 +123,7 @@ mod tests {
         assert_eq!(parse_string("foo\\\\bar"), "foo\\bar");
         assert_eq!(parse_string("foo\\\\bar\\\\baz"), "foo\\bar\\baz");
         assert_eq!(parse_string("foo\\\\\\bar"), "foo\\\\bar");
+        assert_eq!(parse_string("\\\""), "\"");
     }
 
     #[tokio::test]

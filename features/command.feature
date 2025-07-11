@@ -3,5 +3,9 @@ Feature: Command
     When I run `echo hello world`
 
   Scenario: Check an exit status
-    When I run `echo hello world`
+    When I run `true`
     Then the exit status should be 0
+
+  Scenario: Check an exit status
+    When I run `false`
+    Then the exit status should be 1

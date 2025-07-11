@@ -1,9 +1,14 @@
 mod world;
 
-use cucumber::{World, gherkin::Step, given, then, when};
+use cucumber::{Parameter, World, gherkin::Step, given, then, when};
+use derive_more::{Deref, FromStr};
 use std::error::Error;
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
+
+#[derive(Deref, FromStr, Parameter)]
+#[param(regex = r"\d+", name = "u64")]
+struct CustomU64(u64);
 
 #[given(expr = "a file named {string} with:")]
 async fn create_file(
@@ -40,6 +45,13 @@ async fn run_command(world: &mut CommandWorld, command: String) -> Result<(), Bo
 
 #[then(expr = "the exit status should be {int}")]
 async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), Box<dyn Error>> {
+    assert_eq!(world.exit_status(), Some(status));
+
+    Ok(())
+}
+
+#[then(regex = "the (stdout|stderr) status should contain string")]
+async fn check_exit_status(world: &mut CommandWorld, status: String) -> Result<(), Box<dyn Error>> {
     assert_eq!(world.exit_status(), Some(status));
 
     Ok(())

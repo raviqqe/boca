@@ -2,9 +2,8 @@ mod parameter;
 mod world;
 
 use cucumber::{World, gherkin::Step, given, then, when};
-use memchr::memmem;
 use parameter::{CommandString, Exactly, StdioName, StdioType, Successfully};
-use std::error::Error;
+use std::{error::Error, str};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
@@ -70,17 +69,17 @@ async fn check_stdio(
     exactly: Exactly,
     expected_output: String,
 ) -> Result<(), Box<dyn Error>> {
-    let output = match stdio.kind()? {
+    let output = str::from_utf8(match stdio.kind()? {
         StdioType::Stdout => world.stdout(),
         StdioType::Stderr => world.stderr(),
         StdioType::Stdin => return Err("invalid stdin for output".into()),
-    };
-    let expected_output = expected_output.as_bytes();
+    })?;
+    let expected_output = expected_output;
 
     if exactly.exactly() {
-        assert_eq!(output, expected_output);
+        assert_eq!(output.trim(), expected_output.trim());
     } else {
-        assert!(memmem::find(output, expected_output).is_some());
+        assert!(output.contains(&expected_output));
     }
 
     Ok(())

@@ -52,7 +52,7 @@ async fn run_command(
     successfully: Successfully,
     command_string: CommandString,
 ) -> Result<(), Box<dyn Error>> {
-    let command = parse_string(command_string.command());
+    let command = parse_string(&parse_string(command_string.command()));
     let command = command.split_whitespace().collect::<Vec<_>>();
 
     let output = Command::new(command[0])

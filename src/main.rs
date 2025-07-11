@@ -12,7 +12,11 @@ fn parse_string(string: &str) -> String {
 }
 
 fn parse_docstring(string: &str) -> String {
-    string.split('\n').skip(1).collect::<Vec<_>>().join("\n")
+    parse_string(string)
+        .split('\n')
+        .skip(1)
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 #[given(expr = "a file named {string} with:")]
@@ -91,6 +95,7 @@ async fn check_stdio(
         StdioType::Stderr => world.stderr(),
         StdioType::Stdin => return Err("invalid stdin for output".into()),
     })?;
+    let expected_output = parse_string(&expected_output);
 
     if exactly.exactly() {
         assert_eq!(output.trim(), expected_output.trim());

@@ -7,6 +7,10 @@ use std::{error::Error, str};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
+fn parse_docstring(string: &str) -> String {
+    string.split('\n').skip(1).collect::<Vec<_>>().join("\n")
+}
+
 #[given(expr = "a file named {string} with:")]
 async fn create_file(
     world: &mut CommandWorld,
@@ -18,7 +22,7 @@ async fn create_file(
         .write(true)
         .open(world.directory().join(name))
         .await?
-        .write_all(step.docstring.as_ref().expect("file content").as_bytes())
+        .write_all(parse_docstring(step.docstring.as_ref().expect("file content")).as_bytes())
         .await?;
 
     Ok(())

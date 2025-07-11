@@ -49,9 +49,8 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-
     use super::*;
+    use std::path::Path;
 
     #[tokio::test]
     async fn test() {

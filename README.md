@@ -4,7 +4,7 @@
 [![crates.io](https://img.shields.io/crates/v/boca?style=flat-square)](https://crates.io/crates/boca)
 [![License](https://img.shields.io/crates/l/boca?style=flat-square)](#license)
 
-The parallel boca implementation in Rust.
+The parallel [Aruba](https://github.com/cucumber/aruba) implementation in Rust.
 
 ## Install
 

@@ -1,30 +1,36 @@
-use cucumber::{World as _, given, then, when};
+use cucumber::{World, given, then, when};
 use std::error::Error;
 use tokio::process::Command;
 
-#[derive(Debug, Default, cucumber::World)]
-struct World {
-    user: Option<String>,
-    capacity: usize,
+#[derive(Debug, Default, World)]
+struct CommandWorld {
+    exit_status: Option<i32>,
 }
 
-#[given(regex = "I run `(.*)`")]
 #[when(regex = "I run `(.*)`")]
-#[then(regex = "I run `(.*)`")]
-async fn run_command(_world: &mut World, command: String) -> Result<(), Box<dyn Error>> {
+async fn run_command(world: &mut CommandWorld, command: String) -> Result<(), Box<dyn Error>> {
     let command = command.split_whitespace().collect::<Vec<_>>();
 
-    Command::new(&command[0])
+    let output = Command::new(&command[0])
         .args(&command[1..])
         .output()
         .await?;
+
+    world.exit_status = output.status.code();
+
+    Ok(())
+}
+
+#[then(expr = "the exit status should be {int}")]
+async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), Box<dyn Error>> {
+    assert_eq!(world.exit_status, Some(status));
 
     Ok(())
 }
 
 #[tokio::main]
 async fn main() {
-    World::run("tests/features/readme").await;
+    CommandWorld::run("tests/features/readme").await;
 }
 
 #[cfg(test)]
@@ -33,6 +39,6 @@ mod tests {
 
     #[tokio::test]
     async fn test() {
-        World::run("tests/command.feature").await;
+        CommandWorld::run("tests/command.feature").await;
     }
 }

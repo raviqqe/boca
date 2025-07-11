@@ -8,7 +8,7 @@ struct World {
     capacity: usize,
 }
 
-#[given(expr = "{word} is hungry")] // Cucumber Expression
+#[given(expr = "{word} is hungry")]
 async fn someone_is_hungry(w: &mut World, user: String) {
     sleep(Duration::from_secs(2)).await;
 

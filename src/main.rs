@@ -110,7 +110,7 @@ async fn check_stdio(
         let trimmed = expected_output.trim();
 
         if trimmed.is_empty() {
-            assert_eq!(output, expected_output, "not trimmed");
+            assert_eq!(output, expected_output, "untrimmed");
         } else {
             assert_eq!(output.trim(), trimmed, "trimmed");
         }

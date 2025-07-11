@@ -11,6 +11,10 @@ use world::CommandWorld;
 #[param(regex = r"stdin|stdout|stderr", name = "stdio")]
 struct Stdio(String);
 
+#[derive(Deref, FromStr, Parameter)]
+#[param(regex = r"exactly |", name = "exactly")]
+struct Exactly(String);
+
 #[given(expr = "a file named {string} with:")]
 async fn create_file(
     world: &mut CommandWorld,
@@ -51,16 +55,24 @@ async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), 
     Ok(())
 }
 
-#[then(expr = "the {stdio} should contain {string}")]
+#[then(expr = "the {stdio} should contain {exactly}{string}")]
 async fn check_stdio(
     world: &mut CommandWorld,
     stdio: Stdio,
-    output: String,
+    exactly: Exactly,
+    expected_output: String,
 ) -> Result<(), Box<dyn Error>> {
-    match stdio.0.as_str() {
-        "stdout" => assert!(memmem::find(world.stdout(), output.as_bytes()).is_some()),
-        "stderr" => assert!(memmem::find(world.stderr(), output.as_bytes()).is_some()),
+    let output = match stdio.0.as_str() {
+        "stdout" => world.stdout(),
+        "stderr" => world.stderr(),
         _ => return Err("invalid stdio type".into()),
+    };
+    let expected_output = expected_output.as_bytes();
+
+    if &exactly.0 == "exactly" {
+        assert_eq!(output, expected_output);
+    } else {
+        assert!(memmem::find(output, expected_output).is_some());
     }
 
     Ok(())

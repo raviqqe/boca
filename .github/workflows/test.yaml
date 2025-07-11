@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
-      - run: bundler exec cucumber
+      - run: bundler exec cucumber --publish-quiet --strict
   test:
     needs:
       - build

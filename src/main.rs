@@ -1,27 +1,12 @@
+mod parameter;
 mod world;
 
-use cucumber::{Parameter, World, gherkin::Step, given, then, when};
-use derive_more::{Deref, FromStr};
+use cucumber::{World, gherkin::Step, given, then, when};
 use memchr::memmem;
+use parameter::{CommandString, Exactly, StdioName, StdioType, Successfully};
 use std::error::Error;
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
-
-#[derive(Deref, FromStr, Parameter)]
-#[param(regex = r"`(.*)`", name = "command")]
-struct CommandString(String);
-
-#[derive(Deref, FromStr, Parameter)]
-#[param(regex = r"successfully |", name = "successfully")]
-struct Successfully(String);
-
-#[derive(Deref, FromStr, Parameter)]
-#[param(regex = r"stdin|stdout|stderr", name = "stdio")]
-struct Stdio(String);
-
-#[derive(Deref, FromStr, Parameter)]
-#[param(regex = r"exactly |", name = "exactly")]
-struct Exactly(String);
 
 #[given(expr = "a file named {string} with:")]
 async fn create_file(
@@ -43,15 +28,26 @@ async fn create_file(
 #[when(expr = "I {successfully}run {command}")]
 async fn run_command(
     world: &mut CommandWorld,
-    _successfully: Successfully,
+    successfully: Successfully,
     command_string: CommandString,
 ) -> Result<(), Box<dyn Error>> {
-    let command = command_string.0.split_whitespace().collect::<Vec<_>>();
+    let command = command_string
+        .command()
+        .split_whitespace()
+        .collect::<Vec<_>>();
 
     let output = Command::new(command[0])
         .args(&command[1..])
         .output()
         .await?;
+
+    if successfully.successfully() && !output.status.success() {
+        return Err(format!(
+            "invalid command status {}",
+            output.status.code().unwrap_or(-1),
+        )
+        .into());
+    }
 
     world.set_exit_status(output.status.code());
     world.set_stdout(output.stdout);
@@ -70,18 +66,18 @@ async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), 
 #[then(expr = "the {stdio} should contain {exactly}{string}")]
 async fn check_stdio(
     world: &mut CommandWorld,
-    stdio: Stdio,
+    stdio: StdioName,
     exactly: Exactly,
     expected_output: String,
 ) -> Result<(), Box<dyn Error>> {
-    let output = match stdio.0.as_str() {
-        "stdout" => world.stdout(),
-        "stderr" => world.stderr(),
-        _ => return Err("invalid stdio type".into()),
+    let output = match stdio.kind()? {
+        StdioType::Stdout => world.stdout(),
+        StdioType::Stderr => world.stderr(),
+        StdioType::Stdin => return Err("invalid stdin for output".into()),
     };
     let expected_output = expected_output.as_bytes();
 
-    if &exactly.0 == "exactly" {
+    if exactly.exactly() {
         assert_eq!(output, expected_output);
     } else {
         assert!(memmem::find(output, expected_output).is_some());

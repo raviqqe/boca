@@ -7,6 +7,18 @@ use std::{error::Error, str};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
+fn parse_string(string: &str) -> String {
+    string.replace("\\\\", "\\").replace("\\\"", "\"")
+}
+
+fn parse_docstring(string: &str) -> String {
+    parse_string(string)
+        .split('\n')
+        .skip(1)
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 #[given(expr = "a file named {string} with:")]
 async fn create_file(
     world: &mut CommandWorld,
@@ -18,7 +30,7 @@ async fn create_file(
         .write(true)
         .open(world.directory().join(name))
         .await?
-        .write_all(step.docstring.as_ref().expect("file content").as_bytes())
+        .write_all(parse_docstring(step.docstring.as_ref().expect("file content")).as_bytes())
         .await?;
 
     Ok(())
@@ -83,6 +95,7 @@ async fn check_stdio(
         StdioType::Stderr => world.stderr(),
         StdioType::Stdin => return Err("invalid stdin for output".into()),
     })?;
+    let expected_output = parse_string(&expected_output);
 
     if exactly.exactly() {
         assert_eq!(output.trim(), expected_output.trim());
@@ -102,6 +115,16 @@ async fn main() {
 mod tests {
     use super::*;
     use std::path::Path;
+
+    #[test]
+    fn unescape_string() {
+        assert_eq!(parse_string("foo"), "foo");
+        assert_eq!(parse_string("foo\\bar"), "foo\\bar");
+        assert_eq!(parse_string("foo\\\\bar"), "foo\\bar");
+        assert_eq!(parse_string("foo\\\\bar\\\\baz"), "foo\\bar\\baz");
+        assert_eq!(parse_string("foo\\\\\\bar"), "foo\\\\bar");
+        assert_eq!(parse_string("\\\""), "\"");
+    }
 
     #[tokio::test]
     async fn run_features() {

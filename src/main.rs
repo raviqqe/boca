@@ -82,7 +82,6 @@ async fn check_stdio(
         StdioType::Stderr => world.stderr(),
         StdioType::Stdin => return Err("invalid stdin for output".into()),
     })?;
-    let expected_output = expected_output;
 
     if exactly.exactly() {
         assert_eq!(output.trim(), expected_output.trim());

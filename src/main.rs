@@ -8,7 +8,7 @@ use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
 fn parse_string(string: &str) -> String {
-    string.replace("\\\\", "\\").into()
+    string.replace("\\\\", "\\")
 }
 
 fn parse_docstring(string: &str) -> String {

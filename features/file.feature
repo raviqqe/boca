@@ -4,3 +4,4 @@ Feature: File
       """
       foo
       """
+    When I successfully run `test -r foo.txt`

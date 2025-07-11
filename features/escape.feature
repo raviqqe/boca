@@ -14,3 +14,7 @@ Feature: Character escape
       """
     When I successfully run `cat foo.txt`
     Then the stdout should contain exactly "a\"b"
+
+  Scenario: Check stdout with a blank character
+    When I successfully run `echo \\\\\\\\`
+    Then the stdout should contain exactly "\\\\"

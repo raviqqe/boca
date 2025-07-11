@@ -3,18 +3,21 @@ mod world;
 
 use cucumber::{World, gherkin::Step, given, then, when};
 use parameter::{CommandString, Exactly, Not, StdioName, StdioType, Successfully};
+use regex::{Captures, Regex};
 use std::{error::Error, str};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
 fn parse_string(string: &str) -> String {
-    string
-        .replace("\\\\", "BACKSLASH")
-        .replace("\\n", "\n")
-        .replace("\\r", "\r")
-        .replace("\\t", "\t")
-        .replace("\\\"", "\"")
-        .replace("BACKSLASH", "\\")
+    Regex::new(r#"\\([nrt"\\])"#)
+        .unwrap()
+        .replace_all(string, |captures: &Captures| match &captures[1] {
+            "n" => "\n".to_string(),
+            "r" => "\r".into(),
+            "t" => "\t".into(),
+            x => x.into(),
+        })
+        .into()
 }
 
 fn parse_docstring(string: &str) -> String {
@@ -107,9 +110,9 @@ async fn check_stdio(
         let trimmed = expected_output.trim();
 
         if trimmed.is_empty() {
-            assert_eq!(output, expected_output);
+            assert_eq!(output, expected_output, "not trimmed");
         } else {
-            assert_eq!(output.trim(), trimmed);
+            assert_eq!(output.trim(), trimmed, "trimmed");
         }
     } else {
         assert!(output.contains(&expected_output));

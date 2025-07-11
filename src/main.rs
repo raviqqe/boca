@@ -8,6 +8,14 @@ use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
 #[derive(Deref, FromStr, Parameter)]
+#[param(regex = r"`.*`", name = "command")]
+struct CommandString(String);
+
+#[derive(Deref, FromStr, Parameter)]
+#[param(regex = r"successfully |", name = "successfully")]
+struct Successfully(String);
+
+#[derive(Deref, FromStr, Parameter)]
 #[param(regex = r"stdin|stdout|stderr", name = "stdio")]
 struct Stdio(String);
 
@@ -32,9 +40,13 @@ async fn create_file(
     Ok(())
 }
 
-#[when(regex = "I run `(.*)`")]
-async fn run_command(world: &mut CommandWorld, command: String) -> Result<(), Box<dyn Error>> {
-    let command = command.split_whitespace().collect::<Vec<_>>();
+#[when(expr = "I {successfully}run {command}")]
+async fn run_command(
+    world: &mut CommandWorld,
+    _successfully: Successfully,
+    command_string: CommandString,
+) -> Result<(), Box<dyn Error>> {
+    let command = command_string.0.split_whitespace().collect::<Vec<_>>();
 
     let output = Command::new(command[0])
         .args(&command[1..])

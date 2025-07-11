@@ -8,7 +8,7 @@ use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
 #[derive(Deref, FromStr, Parameter)]
-#[param(regex = r"`.*`", name = "command")]
+#[param(regex = r"`(.*)`", name = "command")]
 struct CommandString(String);
 
 #[derive(Deref, FromStr, Parameter)]

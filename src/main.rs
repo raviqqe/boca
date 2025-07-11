@@ -59,7 +59,7 @@ async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), 
 
 #[tokio::main]
 async fn main() {
-    CommandWorld::cucumber().await;
+    CommandWorld::run("features").await;
 }
 
 #[cfg(test)]
@@ -69,8 +69,6 @@ mod tests {
 
     #[tokio::test]
     async fn test() {
-        for name in ["command", "exit_status", "file"] {
-            CommandWorld::run(Path::new("features").join(format!("{}.feature", name))).await;
-        }
+        CommandWorld::run(Path::new("features")).await;
     }
 }

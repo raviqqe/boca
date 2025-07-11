@@ -39,6 +39,6 @@ mod tests {
 
     #[tokio::test]
     async fn test() {
-        CommandWorld::run("tests/command.feature").await;
+        CommandWorld::run("features/command.feature").await;
     }
 }

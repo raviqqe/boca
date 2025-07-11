@@ -7,8 +7,8 @@ use tempfile::{TempDir, tempdir};
 pub struct CommandWorld {
     directory: TempDir,
     exit_status: Option<i32>,
-    stdout: Vec<u8>,
-    stderr: Vec<u8>,
+    stdout: String,
+    stderr: String,
 }
 
 impl CommandWorld {
@@ -16,6 +16,8 @@ impl CommandWorld {
         Self {
             directory: tempdir().expect("test directory"),
             exit_status: None,
+            stdout: Default::default(),
+            stderr: Default::default(),
         }
     }
 
@@ -29,5 +31,21 @@ impl CommandWorld {
 
     pub fn set_exit_status(&mut self, status: Option<i32>) {
         self.exit_status = status;
+    }
+
+    pub fn stdout(&self) -> &str {
+        &self.stdout
+    }
+
+    pub fn set_stdout(&mut self, output: String) {
+        self.stdout = output;
+    }
+
+    pub fn stderr(&self) -> &str {
+        &self.stderr
+    }
+
+    pub fn set_stderr(&mut self, error: String) {
+        self.stderr = error;
     }
 }

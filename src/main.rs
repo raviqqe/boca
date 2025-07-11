@@ -59,7 +59,7 @@ async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), 
 
 #[tokio::main]
 async fn main() {
-    CommandWorld::run("tests/features/readme").await;
+    CommandWorld::cucumber().await;
 }
 
 #[cfg(test)]

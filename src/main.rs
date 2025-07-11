@@ -1,37 +1,74 @@
-use cucumber::{World as _, given, then, when};
-use std::time::Duration;
-use tokio::time::sleep;
+use cucumber::{World, gherkin::Step, given, then, when};
+use std::error::Error;
+use tempfile::{TempDir, tempdir};
+use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 
-#[derive(Debug, Default, cucumber::World)]
-struct World {
-    user: Option<String>,
-    capacity: usize,
+#[derive(Debug, World)]
+#[world(init = Self::new)]
+struct CommandWorld {
+    directory: TempDir,
+    exit_status: Option<i32>,
 }
 
-#[given(expr = "{word} is hungry")] // Cucumber Expression
-async fn someone_is_hungry(w: &mut World, user: String) {
-    sleep(Duration::from_secs(2)).await;
-
-    w.user = Some(user);
+impl CommandWorld {
+    pub fn new() -> Self {
+        Self {
+            directory: tempdir().expect("test directory"),
+            exit_status: None,
+        }
+    }
 }
 
-#[when(regex = r"^(?:he|she|they) eats? (\d+) cucumbers?$")]
-async fn eat_cucumbers(w: &mut World, count: usize) {
-    sleep(Duration::from_secs(2)).await;
+#[given(expr = "a file named {string} with:")]
+async fn create_file(
+    world: &mut CommandWorld,
+    step: &Step,
+    name: String,
+) -> Result<(), Box<dyn Error>> {
+    OpenOptions::default()
+        .create(true)
+        .write(true)
+        .open(world.directory.path().join(name))
+        .await?
+        .write_all(step.docstring.as_ref().expect("file content").as_bytes())
+        .await?;
 
-    w.capacity += count;
-
-    assert!(w.capacity < 4, "{} exploded!", w.user.as_ref().unwrap());
+    Ok(())
 }
 
-#[then("she is full")]
-async fn is_full(w: &mut World) {
-    sleep(Duration::from_secs(2)).await;
+#[when(regex = "I run `(.*)`")]
+async fn run_command(world: &mut CommandWorld, command: String) -> Result<(), Box<dyn Error>> {
+    let command = command.split_whitespace().collect::<Vec<_>>();
 
-    assert_eq!(w.capacity, 3, "{} isn't full!", w.user.as_ref().unwrap());
+    let output = Command::new(command[0])
+        .args(&command[1..])
+        .output()
+        .await?;
+
+    world.exit_status = output.status.code();
+
+    Ok(())
+}
+
+#[then(expr = "the exit status should be {int}")]
+async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), Box<dyn Error>> {
+    assert_eq!(world.exit_status, Some(status));
+
+    Ok(())
 }
 
 #[tokio::main]
 async fn main() {
-    World::run("tests/features/readme").await;
+    CommandWorld::run("features").await;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[tokio::test]
+    async fn run_features() {
+        CommandWorld::run(Path::new("features")).await;
+    }
 }

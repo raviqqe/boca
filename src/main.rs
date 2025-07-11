@@ -1,10 +1,24 @@
-use cucumber::{World, given, then, when};
+use cucumber::{World, gherkin::Step, given, then, when};
 use std::error::Error;
-use tokio::process::Command;
+use tokio::{fs::File, io::AsyncWriteExt, process::Command};
 
 #[derive(Debug, Default, World)]
 struct CommandWorld {
     exit_status: Option<i32>,
+}
+
+#[given(expr = "a file named {string}:")]
+async fn create_file(
+    _world: &mut CommandWorld,
+    step: &Step,
+    name: String,
+) -> Result<(), Box<dyn Error>> {
+    File::open(name)
+        .await?
+        .write_all(&step.docstring.as_ref().expect("file content").as_bytes())
+        .await?;
+
+    Ok(())
 }
 
 #[when(regex = "I run `(.*)`")]
@@ -35,10 +49,14 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
+
     use super::*;
 
     #[tokio::test]
     async fn test() {
-        CommandWorld::run("features/command.feature").await;
+        for name in ["command", "exit_status", "file"] {
+            CommandWorld::run(Path::new("features").join(format!("{}.feature", name))).await;
+        }
     }
 }

@@ -7,6 +7,10 @@ use std::{error::Error, str};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
+fn parse_string(string: &str) -> String {
+    string.replace("\\\\", "\\").into()
+}
+
 fn parse_docstring(string: &str) -> String {
     string.split('\n').skip(1).collect::<Vec<_>>().join("\n")
 }
@@ -106,6 +110,15 @@ async fn main() {
 mod tests {
     use super::*;
     use std::path::Path;
+
+    #[test]
+    fn unescape_string() {
+        assert_eq!(parse_string("foo"), "foo");
+        assert_eq!(parse_string("foo\\bar"), "foo\\bar");
+        assert_eq!(parse_string("foo\\\\bar"), "foo\\bar");
+        assert_eq!(parse_string("foo\\\\bar\\\\baz"), "foo\\bar\\baz");
+        assert_eq!(parse_string("foo\\\\\\bar"), "foo\\\\bar");
+    }
 
     #[tokio::test]
     async fn run_features() {

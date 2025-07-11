@@ -4,13 +4,9 @@ Feature: Standard I/O
     Then the stdout should contain "bar"
 
   Scenario: Check exact stdout
-    When I run `echo foo bar baz`
+    When I run `echo foo`
     Then the stdout should contain exactly "bar"
 
   Scenario: Check stderr
-    When I run `echo foo bar baz`
-    Then the stderr should contain "bar"
-
-  Scenario: Check exact stderr
-    When I run `echo foo bar baz`
-    Then the stderr should contain exactly "bar"
+    When I run `rm foo`
+    Then the stderr should contain "file"

@@ -19,7 +19,7 @@ impl CommandWorld {
     }
 }
 
-#[given(expr = "a file named {string}:")]
+#[given(expr = "a file named {string} with:")]
 async fn create_file(
     world: &mut CommandWorld,
     step: &Step,

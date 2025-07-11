@@ -3,6 +3,7 @@ mod world;
 
 use cucumber::{World, gherkin::Step, given, then, when};
 use parameter::{CommandString, Exactly, Not, StdioName, StdioType, Successfully};
+use pretty_assertions::{assert_eq, assert_ne};
 use regex::{Captures, Regex};
 use std::{error::Error, str};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
@@ -129,6 +130,7 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
     use std::path::Path;
 
     #[test]

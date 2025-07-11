@@ -17,4 +17,4 @@ Feature: Standard I/O
 
   Scenario: Check stdout with a blank character
     When I successfully run `echo \\\\\\\\`
-    Then the stdout should contain "\\\\"
+    Then the stdout should contain exactly "\\\\"

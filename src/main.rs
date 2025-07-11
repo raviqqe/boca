@@ -104,7 +104,13 @@ async fn check_stdio(
     let expected_output = parse_string(&expected_output);
 
     if exactly.exactly() {
-        assert_eq!(output.trim(), expected_output.trim());
+        let trimmed = expected_output.trim();
+
+        if trimmed.is_empty() {
+            assert_eq!(output, expected_output);
+        } else {
+            assert_eq!(output.trim(), trimmed);
+        }
     } else {
         assert!(output.contains(&expected_output));
     }

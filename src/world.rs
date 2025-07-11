@@ -7,8 +7,8 @@ use tempfile::{TempDir, tempdir};
 pub struct CommandWorld {
     directory: TempDir,
     exit_status: Option<i32>,
-    stdout: String,
-    stderr: String,
+    stdout: Vec<u8>,
+    stderr: Vec<u8>,
 }
 
 impl CommandWorld {
@@ -33,19 +33,19 @@ impl CommandWorld {
         self.exit_status = status;
     }
 
-    pub fn stdout(&self) -> &str {
+    pub fn stdout(&self) -> &[u8] {
         &self.stdout
     }
 
-    pub fn set_stdout(&mut self, output: String) {
+    pub fn set_stdout(&mut self, output: Vec<u8>) {
         self.stdout = output;
     }
 
-    pub fn stderr(&self) -> &str {
+    pub fn stderr(&self) -> &[u8] {
         &self.stderr
     }
 
-    pub fn set_stderr(&mut self, error: String) {
+    pub fn set_stderr(&mut self, error: Vec<u8>) {
         self.stderr = error;
     }
 }

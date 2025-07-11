@@ -32,6 +32,8 @@ async fn run_command(world: &mut CommandWorld, command: String) -> Result<(), Bo
         .await?;
 
     world.set_exit_status(output.status.code());
+    world.set_stdout(output.stdout);
+    world.set_stderr(output.stderr);
 
     Ok(())
 }

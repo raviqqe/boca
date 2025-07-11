@@ -106,13 +106,7 @@ async fn check_stdio(
     let expected_output = parse_string(&expected_output);
 
     if exactly.exactly() {
-        let trimmed = expected_output.trim();
-
-        if trimmed.is_empty() {
-            assert_eq!(output, expected_output, "untrimmed");
-        } else {
-            assert_eq!(output.trim(), trimmed, "trimmed");
-        }
+        assert_eq!(output.trim(), expected_output.trim());
     } else {
         assert!(output.contains(&expected_output));
     }

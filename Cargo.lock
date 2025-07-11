@@ -109,6 +109,7 @@ version = "0.1.1"
 dependencies = [
  "cucumber",
  "derive_more 2.0.1",
+ "memchr",
  "pretty_assertions",
  "tempfile",
  "tokio",

@@ -2,13 +2,14 @@ mod world;
 
 use cucumber::{Parameter, World, gherkin::Step, given, then, when};
 use derive_more::{Deref, FromStr};
+use memchr::memmem;
 use std::error::Error;
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 use world::CommandWorld;
 
 #[derive(Deref, FromStr, Parameter)]
-#[param(regex = r"\d+", name = "u64")]
-struct CustomU64(u64);
+#[param(regex = r"stdin|stdout|stderr", name = "stdio")]
+struct Stdio(String);
 
 #[given(expr = "a file named {string} with:")]
 async fn create_file(
@@ -50,9 +51,17 @@ async fn check_exit_status(world: &mut CommandWorld, status: i32) -> Result<(), 
     Ok(())
 }
 
-#[then(regex = "the (stdout|stderr) status should contain string")]
-async fn check_exit_status(world: &mut CommandWorld, status: String) -> Result<(), Box<dyn Error>> {
-    assert_eq!(world.exit_status(), Some(status));
+#[then(expr = "the {stdio} status should contain {string}")]
+async fn check_stdio(
+    world: &mut CommandWorld,
+    stdio: Stdio,
+    output: String,
+) -> Result<(), Box<dyn Error>> {
+    match stdio.0.as_str() {
+        "stdout" => assert!(memmem::find(world.stdout(), output.as_bytes()).is_some()),
+        "stderr" => assert!(memmem::find(world.stderr(), output.as_bytes()).is_some()),
+        _ => return Err("invalid stdio type".into()),
+    }
 
     Ok(())
 }

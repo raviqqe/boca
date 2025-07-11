@@ -5,7 +5,7 @@ Feature: Standard I/O
 
   Scenario: Check exact stdout
     When I run `echo foo`
-    Then the stdout should contain exactly "bar"
+    Then the stdout should contain exactly "foo"
 
   Scenario: Check stderr
     When I run `rm foo`

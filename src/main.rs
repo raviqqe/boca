@@ -37,6 +37,7 @@ async fn run_command(
 
     let output = Command::new(command[0])
         .args(&command[1..])
+        .current_dir(world.directory())
         .output()
         .await?;
 

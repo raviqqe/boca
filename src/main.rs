@@ -8,8 +8,8 @@ struct World {
 }
 
 #[given(expr = "I run \"{command}\"")]
-async fn run_command(world: &mut World, command: String) {
-    Command::new(command).run().await;
+async fn run_command(_world: &mut World, command: String) {
+    Command::new(command).output().await;
 }
 
 #[tokio::main]

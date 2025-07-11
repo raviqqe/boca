@@ -16,7 +16,8 @@ fn parse_string(string: &str) -> String {
             "n" => "\n".to_string(),
             "r" => "\r".into(),
             "t" => "\t".into(),
-            x => x.into(),
+            character @ ("\\" | "\"") => character.into(),
+            character => format!("\\{character}"),
         })
         .into()
 }

@@ -9,29 +9,48 @@ struct World {
 }
 
 #[given(expr = "{word} is hungry")]
-async fn someone_is_hungry(w: &mut World, user: String) {
+async fn someone_is_hungry(world: &mut World, user: String) {
     sleep(Duration::from_secs(2)).await;
 
-    w.user = Some(user);
+    world.user = Some(user);
 }
 
 #[when(regex = r"^(?:he|she|they) eats? (\d+) cucumbers?$")]
-async fn eat_cucumbers(w: &mut World, count: usize) {
+async fn eat_cucumbers(world: &mut World, count: usize) {
     sleep(Duration::from_secs(2)).await;
 
-    w.capacity += count;
+    world.capacity += count;
 
-    assert!(w.capacity < 4, "{} exploded!", w.user.as_ref().unwrap());
+    assert!(
+        world.capacity < 4,
+        "{} exploded!",
+        world.user.as_ref().unwrap()
+    );
 }
 
 #[then("she is full")]
-async fn is_full(w: &mut World) {
+async fn is_full(world: &mut World) {
     sleep(Duration::from_secs(2)).await;
 
-    assert_eq!(w.capacity, 3, "{} isn't full!", w.user.as_ref().unwrap());
+    assert_eq!(
+        world.capacity,
+        3,
+        "{} isn't full!",
+        world.user.as_ref().unwrap()
+    );
 }
 
 #[tokio::main]
 async fn main() {
     World::run("tests/features/readme").await;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test() {
+        World::run("tests/features/command.feature").await;
+    }
 }

@@ -1,22 +1,34 @@
 use cucumber::{World, gherkin::Step, given, then, when};
 use std::error::Error;
+use tempfile::{TempDir, tempdir};
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, process::Command};
 
-#[derive(Debug, Default, World)]
+#[derive(Debug, World)]
+#[world(init = Self::new)]
 struct CommandWorld {
+    directory: TempDir,
     exit_status: Option<i32>,
+}
+
+impl CommandWorld {
+    pub fn new() -> Self {
+        Self {
+            directory: tempdir().expect("test directory"),
+            exit_status: None,
+        }
+    }
 }
 
 #[given(expr = "a file named {string}:")]
 async fn create_file(
-    _world: &mut CommandWorld,
+    world: &mut CommandWorld,
     step: &Step,
     name: String,
 ) -> Result<(), Box<dyn Error>> {
     OpenOptions::default()
         .create(true)
         .write(true)
-        .open(name)
+        .open(world.directory.path().join(name))
         .await?
         .write_all(&step.docstring.as_ref().expect("file content").as_bytes())
         .await?;

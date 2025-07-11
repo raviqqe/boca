@@ -7,6 +7,8 @@ use tempfile::{TempDir, tempdir};
 pub struct CommandWorld {
     directory: TempDir,
     exit_status: Option<i32>,
+    stdout: Vec<u8>,
+    stderr: Vec<u8>,
 }
 
 impl CommandWorld {

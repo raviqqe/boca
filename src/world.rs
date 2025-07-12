@@ -53,6 +53,10 @@ impl CommandWorld {
 
 impl Debug for CommandWorld {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        if let Some(status) = self.exit_status() {
+            writeln!(formatter, "exit status: {status}")?;
+        }
+
         writeln!(formatter, "stdout:")?;
         writeln!(formatter, "{}", String::from_utf8_lossy(&self.stdout))?;
         writeln!(formatter, "stderr:")?;

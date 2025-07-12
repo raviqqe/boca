@@ -38,3 +38,11 @@ Feature: Character escape
     Examples:
       | value     |
       | foo\\nbar |
+
+  Scenario: Create a file with an escaped double quote
+    Given a file named "foo.py" with:
+      """
+      print("\\\\\\\\")
+      """
+    When I successfully run `python3 foo.py`
+    Then the stdout should contain "\\\\"

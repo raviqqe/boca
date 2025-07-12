@@ -23,14 +23,24 @@ fn parse_string(string: &str) -> String {
 }
 
 fn parse_docstring(string: &str) -> String {
-    Regex::new(r#"\\(["\\])"#)
+    let cow = Regex::new(r#"\\(["\\])"#)
         .unwrap()
         .replace_all(string, |captures: &Captures| match &captures[1] {
             character @ ("\\" | "\"") => character.into(),
             character => format!("\\{character}"),
-        })
-        .split('\n')
-        .skip(1)
+        });
+    let lines = cow.split('\n').skip(1).collect::<Vec<_>>();
+
+    let indent = lines
+        .iter()
+        .filter(|line| !line.is_empty())
+        .map(|line| line.chars().take_while(|&char| char == ' ').count())
+        .min()
+        .unwrap_or_default();
+
+    lines
+        .into_iter()
+        .map(|line| line.chars().skip(indent).collect::<String>())
         .collect::<Vec<_>>()
         .join("\n")
 }

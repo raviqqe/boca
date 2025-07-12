@@ -23,7 +23,12 @@ fn parse_string(string: &str) -> String {
 }
 
 fn parse_docstring(string: &str) -> String {
-    parse_string(string)
+    Regex::new(r#"\\(["\\])"#)
+        .unwrap()
+        .replace_all(string, |captures: &Captures| match &captures[1] {
+            character @ ("\\" | "\"") => character.into(),
+            character => format!("\\{character}"),
+        })
         .split('\n')
         .skip(1)
         .collect::<Vec<_>>()
@@ -109,7 +114,14 @@ async fn check_stdio(
     if exactly.exactly() {
         assert_eq!(output.trim(), expected_output.trim());
     } else {
-        assert!(output.contains(&expected_output));
+        let expected_output = parse_string(&expected_output);
+
+        assert!(
+            output.contains(&expected_output),
+            "{:?} vs {:?}",
+            output,
+            expected_output
+        );
     }
 
     Ok(())

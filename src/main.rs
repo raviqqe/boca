@@ -128,9 +128,7 @@ async fn check_stdio(
 
         assert!(
             output.contains(&expected_output),
-            "{:?} vs {:?}",
-            output,
-            expected_output
+            "{output:?} vs {expected_output:?}"
         );
     }
 

@@ -29,7 +29,7 @@ Feature: Character escape
 
   Scenario Outline: Create a file with an escaped example value
     Given a file named "foo.py" with:
-      """
+      """python
       print("<value>")
       """
     When I successfully run `python3 foo.py`
@@ -41,7 +41,7 @@ Feature: Character escape
 
   Scenario: Create a file with many backslashes
     Given a file named "foo.py" with:
-      """
+      """python
       print("\\\\\\\\")
       """
     When I successfully run `python3 foo.py`

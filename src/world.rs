@@ -1,8 +1,9 @@
+use core::fmt::{self, Debug, Formatter};
 use cucumber::World;
 use std::path::Path;
 use tempfile::{TempDir, tempdir};
 
-#[derive(Debug, World)]
+#[derive(World)]
 #[world(init = Self::new)]
 pub struct CommandWorld {
     directory: TempDir,
@@ -47,5 +48,16 @@ impl CommandWorld {
 
     pub fn set_stderr(&mut self, error: Vec<u8>) {
         self.stderr = error;
+    }
+}
+
+impl Debug for CommandWorld {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        writeln!(formatter, "stdout:")?;
+        writeln!(formatter, "{}", String::from_utf8_lossy(&self.stdout))?;
+        writeln!(formatter, "stderr:")?;
+        writeln!(formatter, "{}", String::from_utf8_lossy(&self.stderr))?;
+
+        Ok(())
     }
 }

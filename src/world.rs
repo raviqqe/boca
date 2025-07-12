@@ -57,10 +57,13 @@ impl Debug for CommandWorld {
             writeln!(formatter, "exit status: {status}")?;
         }
 
-        writeln!(formatter, "stdout:")?;
-        writeln!(formatter, "{}", String::from_utf8_lossy(&self.stdout))?;
-        writeln!(formatter, "stderr:")?;
-        writeln!(formatter, "{}", String::from_utf8_lossy(&self.stderr))?;
+        for (name, value) in [("stdout", self.stdout()), ("stderr", self.stderr())] {
+            writeln!(formatter, "{name}:")?;
+
+            if !value.is_empty() {
+                writeln!(formatter, "{}", String::from_utf8_lossy(value))?;
+            }
+        }
 
         Ok(())
     }

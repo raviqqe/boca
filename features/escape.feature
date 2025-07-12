@@ -18,3 +18,23 @@ Feature: Character escape
   Scenario: Check stdout with a blank character
     When I successfully run `echo \\\\\\\\`
     Then the stdout should contain exactly "\\\\"
+
+  Scenario: Create a file with an escaped double quote
+    Given a file named "foo.py" with:
+      """python
+      print("foo\nbar")
+      """
+    When I successfully run `python3 foo.py`
+    Then the stdout should contain exactly "foo\nbar"
+
+  Scenario Outline: Create a file with an escaped double quote
+    Given a file named "foo.py" with:
+      """
+      print("<value>")
+      """
+    When I successfully run `python3 foo.py`
+    Then the stdout should contain "<value>"
+
+    Examples:
+      | value     |
+      | foo\\nbar |

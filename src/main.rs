@@ -23,9 +23,24 @@ fn parse_string(string: &str) -> String {
 }
 
 fn parse_docstring(string: &str) -> String {
-    parse_string(string)
-        .split('\n')
-        .skip(1)
+    let cow = Regex::new(r#"\\(["\\])"#)
+        .unwrap()
+        .replace_all(string, |captures: &Captures| match &captures[1] {
+            character @ ("\\" | "\"") => character.into(),
+            character => format!("\\{character}"),
+        });
+    let lines = cow.split('\n').skip(1).collect::<Vec<_>>();
+
+    let indent = lines
+        .iter()
+        .filter(|line| !line.is_empty())
+        .map(|line| line.chars().take_while(|&char| char == ' ').count())
+        .min()
+        .unwrap_or_default();
+
+    lines
+        .into_iter()
+        .map(|line| line.chars().skip(indent).collect::<String>())
         .collect::<Vec<_>>()
         .join("\n")
 }
@@ -62,17 +77,17 @@ async fn run_command(
         .output()
         .await?;
 
-    if successfully.successfully() && !output.status.success() {
-        return Err(format!(
-            "invalid command status {}",
-            output.status.code().unwrap_or(-1),
-        )
-        .into());
-    }
-
     world.set_exit_status(output.status.code());
     world.set_stdout(output.stdout);
     world.set_stderr(output.stderr);
+
+    if successfully.successfully() && !output.status.success() {
+        return Err(format!(
+            "invalid command status {}",
+            output.status.code().unwrap_or(-1)
+        )
+        .into());
+    }
 
     Ok(())
 }
@@ -109,7 +124,12 @@ async fn check_stdio(
     if exactly.exactly() {
         assert_eq!(output.trim(), expected_output.trim());
     } else {
-        assert!(output.contains(&expected_output));
+        let expected_output = parse_string(&expected_output);
+
+        assert!(
+            output.contains(&expected_output),
+            "{output:?} vs {expected_output:?}"
+        );
     }
 
     Ok(())

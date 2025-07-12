@@ -19,7 +19,7 @@ Feature: Character escape
     When I successfully run `echo \\\\\\\\`
     Then the stdout should contain exactly "\\\\"
 
-  Scenario: Create a file with an escaped double quote
+  Scenario: Create a file with an escaped newline
     Given a file named "foo.py" with:
       """python
       print("foo\nbar")
@@ -27,7 +27,7 @@ Feature: Character escape
     When I successfully run `python3 foo.py`
     Then the stdout should contain exactly "foo\nbar"
 
-  Scenario Outline: Create a file with an escaped double quote
+  Scenario Outline: Create a file with an escaped example value
     Given a file named "foo.py" with:
       """
       print("<value>")
@@ -39,7 +39,7 @@ Feature: Character escape
       | value     |
       | foo\\nbar |
 
-  Scenario: Create a file with an escaped double quote
+  Scenario: Create a file with many backslashes
     Given a file named "foo.py" with:
       """
       print("\\\\\\\\")

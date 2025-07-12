@@ -83,9 +83,8 @@ async fn run_command(
 
     if successfully.successfully() && !output.status.success() {
         return Err(format!(
-            "invalid command status {} (stderr: {})",
-            output.status.code().unwrap_or(-1),
-            String::from_utf8_lossy(world.stderr())
+            "invalid command status {}",
+            output.status.code().unwrap_or(-1)
         )
         .into());
     }

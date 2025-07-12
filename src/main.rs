@@ -67,17 +67,18 @@ async fn run_command(
         .output()
         .await?;
 
-    if successfully.successfully() && !output.status.success() {
-        return Err(format!(
-            "invalid command status {}",
-            output.status.code().unwrap_or(-1),
-        )
-        .into());
-    }
-
     world.set_exit_status(output.status.code());
     world.set_stdout(output.stdout);
     world.set_stderr(output.stderr);
+
+    if successfully.successfully() && !output.status.success() {
+        return Err(format!(
+            "invalid command status {} (stderr: {})",
+            output.status.code().unwrap_or(-1),
+            String::from_utf8_lossy(world.stderr())
+        )
+        .into());
+    }
 
     Ok(())
 }

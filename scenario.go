@@ -303,10 +303,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(
 		`^(?:a|the) file(?: named)? "(.+)"(?: with mode "(.*)" and)? with:$`,
 		func(ctx context.Context, p, mode string, s *godog.DocString) error {
-			content := trimTrailingNewlines(s.Content) + "\n"
-
 			if mode == "" {
-				return createFile(ctx, p, content)
+				return createFile(ctx, p, s.Content)
 			}
 
 			m, err := parseFileMode(mode)
@@ -314,12 +312,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 				return err
 			}
 
-			return createFileWithMode(ctx, p, content, m)
+			return createFileWithMode(ctx, p, s.Content, m)
 		})
 	ctx.Step(
 		`^(?:an|the) executable(?: named)? "(.+)" with:$`,
 		func(ctx context.Context, p string, s *godog.DocString) error {
-			return createFileWithMode(ctx, p, trimTrailingNewlines(s.Content)+"\n", 0o755)
+			return createFileWithMode(ctx, p, s.Content, 0o755)
 		})
 	ctx.Step(`^a directory named "(.+)"$`, createDirectory)
 	ctx.Step(`^(?:a|the) (?:directory|file)(?: named)? "(.*)" does not exist$`, removeFile)

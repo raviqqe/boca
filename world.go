@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -15,7 +14,7 @@ import (
 type worldKey struct{}
 
 type world struct {
-	commands         []*exec.Cmd
+	commands         []command
 	RootDirectory    string
 	CurrentDirectory string
 	Stdin            io.WriteCloser
@@ -31,42 +30,42 @@ func newWorld(d string) world {
 	}
 }
 
-func (w world) AddCommand(c *exec.Cmd) world {
+func (w world) AddCommand(c command) world {
 	w.commands = append(w.commands, c)
 	return w
 }
 
-func (w world) FindCommand(s string) *exec.Cmd {
+func (w world) FindCommand(line string) *command {
 	for _, c := range w.commands {
-		if s == strings.Join(c.Args, " ") {
-			return c
+		if line == c.Line {
+			return &c
 		}
 	}
 
 	return nil
 }
 
-func (w world) LastCommand() *exec.Cmd {
+func (w world) LastCommand() command {
 	return w.commands[len(w.commands)-1]
 }
 
 func (w world) Stop() {
 	for _, c := range w.commands {
-		if c.Process != nil && c.ProcessState == nil {
-			_ = c.Process.Kill()
-			_ = c.Wait()
+		if c.Cmd.Process != nil && c.Cmd.ProcessState == nil {
+			_ = c.Cmd.Process.Kill()
+			_ = c.Cmd.Wait()
 		}
 	}
 }
 
 func (w world) Stdout() string {
-	return w.stdout(func(c *exec.Cmd) io.Writer {
+	return w.channelOutput(func(c command) *bytes.Buffer {
 		return c.Stdout
 	})
 }
 
 func (w world) Stderr() string {
-	return w.stdout(func(c *exec.Cmd) io.Writer {
+	return w.channelOutput(func(c command) *bytes.Buffer {
 		return c.Stderr
 	})
 }
@@ -75,11 +74,8 @@ func (w world) Output() string {
 	bs := []byte(nil)
 
 	for _, c := range w.commands {
-		_ = c.Wait()
-
-		for _, b := range []*bytes.Buffer{c.Stdout.(*bytes.Buffer), c.Stderr.(*bytes.Buffer)} {
-			bs = append(bs, b.Bytes()...)
-		}
+		_ = c.Cmd.Wait()
+		bs = append(bs, c.Output()...)
 	}
 
 	return string(bs)
@@ -101,12 +97,12 @@ func (w world) path(p string) (string, error) {
 	return q, nil
 }
 
-func (w world) stdout(f func(*exec.Cmd) io.Writer) string {
+func (w world) channelOutput(f func(command) *bytes.Buffer) string {
 	bs := []byte(nil)
 
 	for _, c := range w.commands {
-		_ = c.Wait()
-		bs = append(bs, f(c).(*bytes.Buffer).Bytes()...)
+		_ = c.Cmd.Wait()
+		bs = append(bs, f(c).Bytes()...)
 	}
 
 	return string(bs)

@@ -1,37 +1,46 @@
 package aruba
 
 import (
-	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+func TestFindCommandByCommandLine(t *testing.T) {
+	c := createCommand(t, "echo 'foo bar'")
+
+	assert.Equal(t, &c, world{}.AddCommand(c).FindCommand("echo 'foo bar'"))
+}
+
+func TestFindCommandFindsNothing(t *testing.T) {
+	assert.Nil(t, world{}.AddCommand(createCommand(t, "echo foo")).FindCommand("echo bar"))
+}
+
 func TestStopKillsRunningCommand(t *testing.T) {
-	c := exec.Command("sleep", "10")
-	require.NoError(t, c.Start())
+	c := createCommand(t, "sleep 10")
+	require.NoError(t, c.Cmd.Start())
 
 	world{}.AddCommand(c).Stop()
 
-	require.NotNil(t, c.ProcessState)
-	assert.False(t, c.ProcessState.Success())
+	require.NotNil(t, c.Cmd.ProcessState)
+	assert.False(t, c.Cmd.ProcessState.Success())
 }
 
 func TestStopKeepsFinishedCommand(t *testing.T) {
-	c := exec.Command("true")
-	require.NoError(t, c.Start())
-	require.NoError(t, c.Wait())
+	c := createCommand(t, "true")
+	require.NoError(t, c.Cmd.Start())
+	require.NoError(t, c.Cmd.Wait())
 
 	world{}.AddCommand(c).Stop()
 
-	assert.True(t, c.ProcessState.Success())
+	assert.True(t, c.Cmd.ProcessState.Success())
 }
 
 func TestStopIgnoresUnstartedCommand(t *testing.T) {
-	c := exec.Command("true")
+	c := createCommand(t, "true")
 
 	world{}.AddCommand(c).Stop()
 
-	assert.Nil(t, c.ProcessState)
+	assert.Nil(t, c.Cmd.ProcessState)
 }

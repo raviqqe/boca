@@ -50,6 +50,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        runner:
+          - go
+          - ruby
         dependent:
           - directory: cloe
             build: rake build
@@ -76,6 +79,7 @@ jobs:
           go-version: stable
       - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       - run: go install ./cmd/agoa
+      - run: bundler
       - run: |
           for variable in ${{ join(matrix.dependent.environment, ' ') }}; do
             echo $variable >> ${{ github.env }}
@@ -83,8 +87,11 @@ jobs:
         working-directory: dependents/${{ matrix.dependent.directory }}
       - run: ${{ matrix.dependent.build }}
         working-directory: dependents/${{ matrix.dependent.directory }}
-      - run: bundler
-      - run: |
+      - if: matrix.runner == 'go'
+        run: agoa --strict
+        working-directory: dependents/${{ matrix.dependent.directory }}
+      - if: matrix.runner == 'ruby'
+        run: |
           mkdir -p $feature_directory/support
           cp ${{ github.workspace }}/dependents/aruba.rb $feature_directory/support/aruba_go.rb
 
@@ -93,8 +100,6 @@ jobs:
         env:
           BUNDLE_GEMFILE: ${{ github.workspace }}/Gemfile
           feature_directory: ${{ github.workspace }}/dependents/${{ matrix.dependent.directory }}/features
-      - run: agoa --strict
-        working-directory: dependents/${{ matrix.dependent.directory }}
   test:
     needs:
       - build

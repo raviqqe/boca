@@ -85,13 +85,11 @@ jobs:
         working-directory: dependents/${{ matrix.dependent.directory }}
       - run: ${{ matrix.dependent.build }}
         working-directory: dependents/${{ matrix.dependent.directory }}
-      - if: matrix.runner == 'go'
-        run: go install ./cmd/agoa
+      - run: go install ./cmd/agoa
+      - run: bundler
       - if: matrix.runner == 'go'
         run: agoa --strict
         working-directory: dependents/${{ matrix.dependent.directory }}
-      - if: matrix.runner == 'ruby'
-        run: bundler
       - if: matrix.runner == 'ruby'
         run: |
           mkdir -p $feature_directory/support

@@ -14,7 +14,7 @@ import (
 type worldKey struct{}
 
 type world struct {
-	commands         []command
+	commands         []*command
 	RootDirectory    string
 	CurrentDirectory string
 	Stdin            io.WriteCloser
@@ -30,22 +30,22 @@ func newWorld(d string) world {
 	}
 }
 
-func (w world) AddCommand(c command) world {
+func (w world) AddCommand(c *command) world {
 	w.commands = append(w.commands, c)
 	return w
 }
 
-func (w world) FindCommand(s string) *command {
+func (w world) FindCommand(line string) *command {
 	for _, c := range w.commands {
-		if s == c.Line {
-			return &c
+		if line == c.Line {
+			return c
 		}
 	}
 
 	return nil
 }
 
-func (w world) LastCommand() command {
+func (w world) LastCommand() *command {
 	return w.commands[len(w.commands)-1]
 }
 
@@ -69,13 +69,13 @@ func (w world) Stop() {
 }
 
 func (w world) Stdout() string {
-	return w.output(func(c command) *bytes.Buffer {
+	return w.output(func(c *command) *bytes.Buffer {
 		return c.Stdout
 	})
 }
 
 func (w world) Stderr() string {
-	return w.output(func(c command) *bytes.Buffer {
+	return w.output(func(c *command) *bytes.Buffer {
 		return c.Stderr
 	})
 }
@@ -107,7 +107,7 @@ func (w world) path(p string) (string, error) {
 	return q, nil
 }
 
-func (w world) output(f func(command) *bytes.Buffer) string {
+func (w world) output(f func(*command) *bytes.Buffer) string {
 	bs := []byte(nil)
 
 	for _, c := range w.commands {

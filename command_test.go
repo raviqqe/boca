@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createCommand(t *testing.T, line string) command {
+func createCommand(t *testing.T, line string) *command {
 	t.Helper()
 
 	c, err := newCommand(line)

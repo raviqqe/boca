@@ -15,15 +15,15 @@ type command struct {
 	Stderr *bytes.Buffer
 }
 
-func newCommand(line string) (command, error) {
+func newCommand(line string) (*command, error) {
 	ss, err := shellquote.Split(line)
 	if err != nil {
-		return command{}, err
+		return nil, err
 	} else if len(ss) == 0 {
-		return command{}, errors.New("empty command")
+		return nil, errors.New("empty command")
 	}
 
-	c := command{
+	c := &command{
 		Line:   line,
 		Cmd:    exec.Command(ss[0], ss[1:]...),
 		Stdout: bytes.NewBuffer(nil),
@@ -35,6 +35,6 @@ func newCommand(line string) (command, error) {
 	return c, nil
 }
 
-func (c command) Output() string {
+func (c *command) Output() string {
 	return c.Stdout.String() + c.Stderr.String()
 }

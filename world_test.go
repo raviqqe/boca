@@ -28,7 +28,7 @@ func TestEnvironmentVariableReturnsNothingForUnknownName(t *testing.T) {
 func TestFindCommandByCommandLine(t *testing.T) {
 	c := createCommand(t, "echo 'foo bar'")
 
-	assert.Equal(t, &c, world{}.AddCommand(c).FindCommand("echo 'foo bar'"))
+	assert.Same(t, c, world{}.AddCommand(c).FindCommand("echo 'foo bar'"))
 }
 
 func TestFindCommandFindsNothing(t *testing.T) {

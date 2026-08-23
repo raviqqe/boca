@@ -31,6 +31,16 @@ func TestFindCommandByCommandLine(t *testing.T) {
 	assert.Same(t, c, world{}.AddCommand(c).FindCommand("echo 'foo bar'"))
 }
 
+func TestFindCommandFindsLastCommand(t *testing.T) {
+	c := createCommand(t, "echo foo")
+
+	assert.Same(
+		t,
+		c,
+		world{}.AddCommand(createCommand(t, "echo foo")).AddCommand(c).FindCommand("echo foo"),
+	)
+}
+
 func TestFindCommandFindsNothing(t *testing.T) {
 	assert.Nil(t, world{}.AddCommand(createCommand(t, "echo foo")).FindCommand("echo bar"))
 }

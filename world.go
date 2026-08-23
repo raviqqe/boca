@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 )
@@ -36,7 +37,7 @@ func (w world) AddCommand(c *command) world {
 }
 
 func (w world) FindCommand(s string) *command {
-	for _, c := range w.commands {
+	for _, c := range slices.Backward(w.commands) {
 		if s == c.Line {
 			return c
 		}
@@ -50,8 +51,8 @@ func (w world) LastCommand() *command {
 }
 
 func (w world) EnvironmentVariable(name string) string {
-	for i := len(w.Environment) - 1; i >= 0; i-- {
-		if k, v, ok := strings.Cut(w.Environment[i], "="); ok && k == name {
+	for _, s := range slices.Backward(w.Environment) {
+		if k, v, ok := strings.Cut(s, "="); ok && k == name {
 			return v
 		}
 	}

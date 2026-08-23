@@ -86,10 +86,9 @@ jobs:
       - run: bundler
       - run: |
           mkdir -p $feature_directory/support
-          echo "require 'aruba/cucumber'" > $feature_directory/support/aruba_go.rb
+          cp ${{ github.workspace }}/dependents/aruba.rb $feature_directory/support/aruba_go.rb
 
-          bundler exec cucumber --strict --tags 'not @go' \
-            --require $feature_directory $feature_directory
+          bundler exec cucumber --strict --require $feature_directory $feature_directory
         working-directory: ${{ runner.temp }}
         env:
           BUNDLE_GEMFILE: ${{ github.workspace }}/Gemfile

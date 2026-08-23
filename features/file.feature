@@ -178,14 +178,16 @@ Feature: File
         c
         """
 
-    Scenario: Check a file to contain a newline
+    Scenario: Check a file not to end with a newline
       When a file named "foo.txt" with:
         """
         a
         """
-      Then a file named "foo.txt" should contain "a\n"
+      Then a file named "foo.txt" should contain "a"
+      And I successfully run `wc -c foo.txt`
+      And the stdout should contain "1 foo.txt"
 
-    Scenario: Check a file to contain two newlines
+    Scenario: Check a file to keep trailing blank lines
       When a file named "foo.txt" with:
         """
         a
@@ -193,7 +195,8 @@ Feature: File
 
         """
       Then a file named "foo.txt" should contain "a\n"
-      And a file named "foo.txt" should not contain "a\n\n"
+      And I successfully run `wc -c foo.txt`
+      And the stdout should contain "3 foo.txt"
 
     Scenario: Check a file to contain leading spaces
       When a file named "foo.txt" with:

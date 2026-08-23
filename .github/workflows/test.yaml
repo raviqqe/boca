@@ -53,7 +53,6 @@ jobs:
         dependent:
           - directory: cloe
             build: rake build
-            arguments: examples
             environment:
               - PATH=$PWD/bin:$PATH
           - directory: schemat
@@ -85,10 +84,16 @@ jobs:
       - run: ${{ matrix.dependent.build }}
         working-directory: dependents/${{ matrix.dependent.directory }}
       - run: bundler
-        working-directory: dependents/${{ matrix.dependent.directory }}
-      - run: bundler exec cucumber ${{ matrix.dependent.arguments }}
-        working-directory: dependents/${{ matrix.dependent.directory }}
-      - run: agoa --strict ${{ matrix.dependent.arguments }}
+      - run: |
+          mkdir -p $feature_directory/support
+          cp ${{ github.workspace }}/dependents/aruba.rb $feature_directory/support/aruba_go.rb
+
+          bundler exec cucumber --strict --require $feature_directory $feature_directory
+        working-directory: ${{ runner.temp }}
+        env:
+          BUNDLE_GEMFILE: ${{ github.workspace }}/Gemfile
+          feature_directory: ${{ github.workspace }}/dependents/${{ matrix.dependent.directory }}/features
+      - run: agoa --strict
         working-directory: dependents/${{ matrix.dependent.directory }}
   test:
     needs:

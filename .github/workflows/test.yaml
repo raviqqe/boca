@@ -68,8 +68,6 @@ jobs:
           - directory: turtle-build
             build: cargo install --locked --path .
     runs-on: ubuntu-latest
-    env:
-      BUNDLE_GEMFILE: ${{ github.workspace }}/Gemfile
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -93,6 +91,7 @@ jobs:
           --require $feature_directory $feature_directory
         working-directory: ${{ runner.temp }}
         env:
+          BUNDLE_GEMFILE: ${{ github.workspace }}/Gemfile
           feature_directory: ${{ github.workspace }}/dependents/${{ matrix.dependent.directory }}/${{ matrix.dependent.arguments || 'features' }}
       - run: agoa --strict ${{ matrix.dependent.arguments }}
         working-directory: dependents/${{ matrix.dependent.directory }}

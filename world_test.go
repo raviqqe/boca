@@ -7,6 +7,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestEnvironmentVariableReturnsValue(t *testing.T) {
+	w := world{Environment: []string{"foo=bar"}}
+
+	assert.Equal(t, "bar", w.EnvironmentVariable("foo"))
+}
+
+func TestEnvironmentVariableReturnsLastValue(t *testing.T) {
+	w := world{Environment: []string{"foo=bar", "foo=baz"}}
+
+	assert.Equal(t, "baz", w.EnvironmentVariable("foo"))
+}
+
+func TestEnvironmentVariableReturnsNothingForUnknownName(t *testing.T) {
+	w := world{Environment: []string{"foo=bar"}}
+
+	assert.Empty(t, w.EnvironmentVariable("baz"))
+}
+
 func TestFindCommandByCommandLine(t *testing.T) {
 	c := createCommand(t, "echo 'foo bar'")
 

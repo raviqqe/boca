@@ -49,6 +49,16 @@ func (w world) LastCommand() command {
 	return w.commands[len(w.commands)-1]
 }
 
+func (w world) EnvironmentVariable(name string) string {
+	for i := len(w.Environment) - 1; i >= 0; i-- {
+		if k, v, ok := strings.Cut(w.Environment[i], "="); ok && k == name {
+			return v
+		}
+	}
+
+	return ""
+}
+
 func (w world) Stop() {
 	for _, c := range w.commands {
 		if c.Cmd.Process != nil && c.Cmd.ProcessState == nil {

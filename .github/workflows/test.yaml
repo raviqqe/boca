@@ -89,10 +89,10 @@ jobs:
       - run: bundler
       - run: >
           bundler exec cucumber --strict
-          --require $support_file --require $feature_directory $feature_directory
+          --require ${{ github.workspace }}/dependents/aruba.rb
+          --require $feature_directory $feature_directory
         working-directory: ${{ runner.temp }}
         env:
-          support_file: ${{ github.workspace }}/dependents/aruba.rb
           feature_directory: ${{ github.workspace }}/dependents/${{ matrix.dependent.directory }}/${{ matrix.dependent.arguments || 'features' }}
       - run: agoa --strict ${{ matrix.dependent.arguments }}
         working-directory: dependents/${{ matrix.dependent.directory }}

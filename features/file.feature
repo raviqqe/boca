@@ -41,6 +41,17 @@ Feature: File
       | a       |
       | the     |
 
+  Scenario Outline: Check file non-existence
+    Then <article> file named "foo.txt" does not exist
+    And <article> file "foo.txt" does not exist
+    And <article> directory named "foo" does not exist
+    And <article> directory "foo" does not exist
+
+    Examples:
+      | article |
+      | a       |
+      | the     |
+
   Scenario: Create a directory
     Given a directory named "foo"
     Then the directory named "foo" should exist

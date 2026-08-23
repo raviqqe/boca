@@ -254,6 +254,19 @@ func fileExists(ctx context.Context, ty, p, not string) error {
 	return nil
 }
 
+func fileNotExists(ctx context.Context, ty, p string) error {
+	q, err := contextWorld(ctx).path(p)
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(q); err == nil {
+		return fmt.Errorf("%s %q should not exist", ty, p)
+	}
+
+	return nil
+}
+
 func setEnvVar(ctx context.Context, k, v string) context.Context {
 	w := contextWorld(ctx)
 	w.Environment = append(w.Environment, k+"="+v)
@@ -346,6 +359,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		})
 	ctx.Step(`^I pipe in the file(?: named)? "(.*)"$`, stdin)
 	ctx.Step(`^(?:a|the) (directory|file)(?: named)? "(.*)" should( not)? exist$`, fileExists)
+	ctx.Step(`^(?:a|the) (directory|file)(?: named)? "(.*)" does not exist$`, fileNotExists)
 	ctx.Step(`^I set the environment variable "(.*)" to "(.*)"$`, setEnvVar)
 	ctx.Step(`^I run the following (?:commands|script):$`, runScript)
 	ctx.Step(`^I cd to "(.*)"$`, changeDirectory)

@@ -86,7 +86,10 @@ jobs:
         working-directory: dependents/${{ matrix.dependent.directory }}
       - run: bundler
         working-directory: dependents/${{ matrix.dependent.directory }}
-      - run: bundler exec cucumber --strict --require ../aruba.rb ${{ matrix.dependent.arguments }}
+      - run: >
+          bundler exec cucumber --strict --require ../aruba.rb
+          --require ${{ matrix.dependent.arguments || 'features' }}
+          ${{ matrix.dependent.arguments }}
         working-directory: dependents/${{ matrix.dependent.directory }}
       - run: agoa --strict ${{ matrix.dependent.arguments }}
         working-directory: dependents/${{ matrix.dependent.directory }}

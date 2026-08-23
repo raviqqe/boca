@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-const Version = "0.1.10"
+const Version = "0.1.11"
 
 type Options struct {
 	Godog   godog.Options

@@ -35,9 +35,9 @@ func (w world) AddCommand(c *command) world {
 	return w
 }
 
-func (w world) FindCommand(line string) *command {
+func (w world) FindCommand(s string) *command {
 	for _, c := range w.commands {
-		if line == c.Line {
+		if s == c.Line {
 			return c
 		}
 	}

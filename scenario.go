@@ -81,12 +81,12 @@ func createDirectory(ctx context.Context, p string) error {
 }
 
 func removeFile(ctx context.Context, p string) error {
-	q, err := contextWorld(ctx).path(p)
+	p, err := contextWorld(ctx).path(p)
 	if err != nil {
 		return err
 	}
 
-	return os.RemoveAll(q)
+	return os.RemoveAll(p)
 }
 
 func runCommand(ctx context.Context, successfully, line, asynchronously string) (context.Context, error) {

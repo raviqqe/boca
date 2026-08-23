@@ -69,13 +69,13 @@ func (w world) Stop() {
 }
 
 func (w world) Stdout() string {
-	return w.channelOutput(func(c command) *bytes.Buffer {
+	return w.output(func(c command) *bytes.Buffer {
 		return c.Stdout
 	})
 }
 
 func (w world) Stderr() string {
-	return w.channelOutput(func(c command) *bytes.Buffer {
+	return w.output(func(c command) *bytes.Buffer {
 		return c.Stderr
 	})
 }
@@ -107,7 +107,7 @@ func (w world) path(p string) (string, error) {
 	return q, nil
 }
 
-func (w world) channelOutput(f func(command) *bytes.Buffer) string {
+func (w world) output(f func(command) *bytes.Buffer) string {
 	bs := []byte(nil)
 
 	for _, c := range w.commands {

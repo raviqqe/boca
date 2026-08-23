@@ -48,6 +48,12 @@ Feature: Standard I/O
     When I successfully run `sh -c 'echo foo'`
     Then the stdout from "sh -c 'echo foo'" should contain exactly "foo"
 
+  Scenario: Check output without a definite article
+    When I successfully run `echo foo`
+    Then stdout should contain "foo"
+    And output should contain "foo"
+    And stdout from "echo foo" should contain exactly "foo"
+
   Scenario: Check output from an interactive command
     Given a file named "foo.txt" with:
       """

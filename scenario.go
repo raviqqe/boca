@@ -330,7 +330,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^I wait ([\d.]+) seconds? for (?:a|the) command to start up$`, waitForStartup)
 	ctx.Step(`^the exit status should( not)? be (\d+)$`, exitStatus)
 	ctx.Step(
-		`^the (output|std(?:out|err))(?: from (".*"))? should( not)? contain( exactly)? (".*")$`,
+		`^(?:the )?(output|std(?:out|err))(?: from (".*"))? should( not)? contain( exactly)? (".*")$`,
 		func(ctx context.Context, channel, from, not, exactly, pattern string) error {
 			pattern, err := parseString(pattern)
 			if err != nil {
@@ -341,7 +341,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		},
 	)
 	ctx.Step(
-		`^the (output|std(?:out|err))(?: from (".*"))? should( not)? contain( exactly)?:$`,
+		`^(?:the )?(output|std(?:out|err))(?: from (".*"))? should( not)? contain( exactly)?:$`,
 		func(ctx context.Context, channel, from, not, exactly string, docString *godog.DocString) error {
 			return output(ctx, channel, from, not, exactly, trimTrailingNewlines(docString.Content))
 		},

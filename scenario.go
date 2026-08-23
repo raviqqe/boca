@@ -309,7 +309,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 			return createFileWithMode(ctx, p, trimTrailingNewlines(s.Content)+"\n", 0o755)
 		})
 	ctx.Step(`^a directory named "(.+)"$`, createDirectory)
-	ctx.Step("^I( successfully)? run (`.*`)( interactively| in the background)?$", runCommand)
+	ctx.Step("^I( successfully)? run (`.*`)( interactively| in (?:the )?background)?$", runCommand)
 	ctx.Step(`^I wait ([\d.]+) seconds? for (?:a|the) command to start up$`, waitForStartup)
 	ctx.Step(`^the exit status should( not)? be (\d+)$`, exitStatus)
 	ctx.Step(

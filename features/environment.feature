@@ -8,6 +8,23 @@ Feature: Environment
       """
     Then the stdout should contain exactly "bar"
 
+  Scenario: Append an environment variable
+    Given I append "bar" to the environment variable "foo"
+    When I run the following script:
+      """sh
+      echo $foo
+      """
+    Then the stdout should contain exactly "bar"
+
+  Scenario: Append an environment variable to its value
+    Given I set the environment variable "foo" to "bar"
+    And I append "baz" to the environment variable "foo"
+    When I run the following script:
+      """sh
+      echo $foo
+      """
+    Then the stdout should contain exactly "barbaz"
+
   Scenario: Change a directory
     Given a directory named "foo"
     And a file named "foo/bar.txt" with "foo"

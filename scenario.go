@@ -1,20 +1,17 @@
 package aruba
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/cucumber/godog"
-	"github.com/kballard/go-shellquote"
 )
 
 func parseString(s string) (string, error) {
@@ -83,36 +80,40 @@ func createDirectory(ctx context.Context, p string) error {
 	return os.Mkdir(p, 0o700)
 }
 
-func runCommand(ctx context.Context, successfully, command, asynchronously string) (context.Context, error) {
-	command, err := parseString(command)
+func removeFile(ctx context.Context, p string) error {
+	p, err := contextWorld(ctx).path(p)
+	if err != nil {
+		return err
+	}
+
+	return os.RemoveAll(p)
+}
+
+func runCommand(ctx context.Context, successfully, line, asynchronously string) (context.Context, error) {
+	line, err := parseString(line)
 	if err != nil {
 		return ctx, err
 	}
 
-	ss, err := shellquote.Split(command)
+	c, err := newCommand(line)
 	if err != nil {
 		return ctx, err
-	} else if len(ss) == 0 {
-		return ctx, errors.New("empty command")
 	}
 
-	c := exec.Command(ss[0], ss[1:]...)
 	w := contextWorld(ctx)
-	c.Dir = w.CurrentDirectory
-	c.Stdout = bytes.NewBuffer(nil)
-	c.Stderr = bytes.NewBuffer(nil)
-	c.Env = w.Environment
+	c.Cmd.Dir = w.CurrentDirectory
+	c.Cmd.Env = w.Environment
 	w = w.AddCommand(c)
 	ctx = contextWithWorld(ctx, w)
 
-	w.Stdin, err = c.StdinPipe()
+	w.Stdin, err = c.Cmd.StdinPipe()
 	if err != nil {
 		return ctx, err
 	}
 
 	ctx = contextWithWorld(ctx, w)
 
-	err = c.Start()
+	err = c.Cmd.Start()
 	if err != nil {
 		return ctx, err
 	}
@@ -120,7 +121,7 @@ func runCommand(ctx context.Context, successfully, command, asynchronously strin
 	time.Sleep(w.StartupWaitTime)
 
 	if asynchronously == "" {
-		if err := c.Wait(); successfully != "" && err != nil {
+		if err := c.Cmd.Wait(); successfully != "" && err != nil {
 			return ctx, fmt.Errorf("%v (stderr: %q)", err, w.Stderr())
 		}
 	} else if successfully != "" {
@@ -151,9 +152,9 @@ func waitForStartup(ctx context.Context, seconds float64) context.Context {
 func exitStatus(ctx context.Context, not string, code int) error {
 	w := contextWorld(ctx)
 	c := w.LastCommand()
-	_ = c.Wait()
+	_ = c.Cmd.Wait()
 
-	if c := c.ProcessState.ExitCode(); (c == code) != (not == "") {
+	if c := c.Cmd.ProcessState.ExitCode(); (c == code) != (not == "") {
 		return fmt.Errorf("expected exit code %d%s to be %d (stderr: %q)", c, not, code, w.Stderr())
 	}
 
@@ -204,15 +205,15 @@ func output(ctx context.Context, channel, from, not, exactly, pattern string) er
 			return fmt.Errorf("no command matching %q", from)
 		}
 
-		_ = c.Wait()
+		_ = c.Cmd.Wait()
 
 		switch channel {
 		case "stdout":
-			s = c.Stdout.(*bytes.Buffer).String()
+			s = c.Stdout.String()
 		case "stderr":
-			s = c.Stderr.(*bytes.Buffer).String()
+			s = c.Stderr.String()
 		default:
-			s = c.Stdout.(*bytes.Buffer).String() + c.Stderr.(*bytes.Buffer).String()
+			s = c.Output()
 		}
 	}
 
@@ -268,6 +269,10 @@ func setEnvVar(ctx context.Context, k, v string) context.Context {
 	return contextWithWorld(ctx, w)
 }
 
+func appendEnvVar(ctx context.Context, v, k string) context.Context {
+	return setEnvVar(ctx, k, contextWorld(ctx).EnvironmentVariable(k)+v)
+}
+
 func changeDirectory(ctx context.Context, p string) (context.Context, error) {
 	w := contextWorld(ctx)
 
@@ -317,11 +322,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 			return createFileWithMode(ctx, p, trimTrailingNewlines(s.Content)+"\n", 0o755)
 		})
 	ctx.Step(`^a directory named "(.+)"$`, createDirectory)
-	ctx.Step("^I( successfully)? run (`.*`)( interactively| in the background)?$", runCommand)
+	ctx.Step(`^(?:a|the) (?:directory|file)(?: named)? "(.*)" does not exist$`, removeFile)
+	ctx.Step("^I( successfully)? run (`.*`)( interactively| in (?:the )?background)?$", runCommand)
 	ctx.Step(`^I wait ([\d.]+) seconds? for (?:a|the) command to start up$`, waitForStartup)
 	ctx.Step(`^the exit status should( not)? be (\d+)$`, exitStatus)
 	ctx.Step(
-		`^the (output|std(?:out|err))(?: from (".*"))? should( not)? contain( exactly)? (".*")$`,
+		`^(?:the )?(output|std(?:out|err))(?: from (".*"))? should( not)? contain( exactly)? (".*")$`,
 		func(ctx context.Context, channel, from, not, exactly, pattern string) error {
 			pattern, err := parseString(pattern)
 			if err != nil {
@@ -332,7 +338,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		},
 	)
 	ctx.Step(
-		`^the (output|std(?:out|err))(?: from (".*"))? should( not)? contain( exactly)?:$`,
+		`^(?:the )?(output|std(?:out|err))(?: from (".*"))? should( not)? contain( exactly)?:$`,
 		func(ctx context.Context, channel, from, not, exactly string, docString *godog.DocString) error {
 			return output(ctx, channel, from, not, exactly, trimTrailingNewlines(docString.Content))
 		},
@@ -355,6 +361,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^I pipe in the file(?: named)? "(.*)"$`, stdin)
 	ctx.Step(`^(?:a|the) (directory|file)(?: named)? "(.*)" should( not)? exist$`, fileExists)
 	ctx.Step(`^I set the environment variable "(.*)" to "(.*)"$`, setEnvVar)
+	ctx.Step(`^I append "(.*)" to the environment variable "(.*)"$`, appendEnvVar)
 	ctx.Step(`^I run the following (?:commands|script):$`, runScript)
 	ctx.Step(`^I cd to "(.*)"$`, changeDirectory)
 }

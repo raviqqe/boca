@@ -41,6 +41,28 @@ Feature: File
       | a       |
       | the     |
 
+  Scenario Outline: Remove a file and a directory
+    Given a file named "foo.txt" with "foo"
+    And a directory named "bar"
+    When <article> file named "foo.txt" does not exist
+    And <article> directory "bar" does not exist
+    Then a file named "foo.txt" should not exist
+    And a directory named "bar" should not exist
+
+    Examples:
+      | article |
+      | a       |
+      | the     |
+
+  Scenario: Remove a directory with a file
+    Given a file named "foo/bar.txt" with "foo"
+    When a directory named "foo" does not exist
+    Then a directory named "foo" should not exist
+
+  Scenario: Remove a missing file
+    When a file named "foo.txt" does not exist
+    Then a file named "foo.txt" should not exist
+
   Scenario: Create a directory
     Given a directory named "foo"
     Then the directory named "foo" should exist

@@ -44,6 +44,16 @@ Feature: Standard I/O
     Then the stderr from "echo foo" should not contain "foo"
     And the output from "echo foo" should contain "foo"
 
+  Scenario: Check output from a command with a quoted argument
+    When I successfully run `sh -c 'echo foo'`
+    Then the stdout from "sh -c 'echo foo'" should contain exactly "foo"
+
+  Scenario: Check output without a definite article
+    When I successfully run `echo foo`
+    Then stdout should contain "foo"
+    And output should contain "foo"
+    And stdout from "echo foo" should contain exactly "foo"
+
   Scenario: Check output from an interactive command
     Given a file named "foo.txt" with:
       """

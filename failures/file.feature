@@ -34,15 +34,6 @@ Feature: File
       | a       |
       | the     |
 
-  Scenario Outline: Check file non-existence
-    Given a file named "foo.txt" with ""
-    Then <article> file named "foo.txt" does not exist
-
-    Examples:
-      | article |
-      | a       |
-      | the     |
-
   Scenario: Create a directory
     Given a directory named "foo"
     Then the directory named "foo" should not exist

@@ -80,6 +80,15 @@ func createDirectory(ctx context.Context, p string) error {
 	return os.Mkdir(p, 0o700)
 }
 
+func removeFile(ctx context.Context, p string) error {
+	q, err := contextWorld(ctx).path(p)
+	if err != nil {
+		return err
+	}
+
+	return os.RemoveAll(q)
+}
+
 func runCommand(ctx context.Context, successfully, line, asynchronously string) (context.Context, error) {
 	line, err := parseString(line)
 	if err != nil {
@@ -254,19 +263,6 @@ func fileExists(ctx context.Context, ty, p, not string) error {
 	return nil
 }
 
-func fileNotExists(ctx context.Context, ty, p string) error {
-	q, err := contextWorld(ctx).path(p)
-	if err != nil {
-		return err
-	}
-
-	if _, err := os.Stat(q); err == nil {
-		return fmt.Errorf("%s %q should not exist", ty, p)
-	}
-
-	return nil
-}
-
 func setEnvVar(ctx context.Context, k, v string) context.Context {
 	w := contextWorld(ctx)
 	w.Environment = append(w.Environment, k+"="+v)
@@ -326,6 +322,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 			return createFileWithMode(ctx, p, trimTrailingNewlines(s.Content)+"\n", 0o755)
 		})
 	ctx.Step(`^a directory named "(.+)"$`, createDirectory)
+	ctx.Step(`^(?:a|the) (?:directory|file)(?: named)? "(.*)" does not exist$`, removeFile)
 	ctx.Step("^I( successfully)? run (`.*`)( interactively| in (?:the )?background)?$", runCommand)
 	ctx.Step(`^I wait ([\d.]+) seconds? for (?:a|the) command to start up$`, waitForStartup)
 	ctx.Step(`^the exit status should( not)? be (\d+)$`, exitStatus)
@@ -363,7 +360,6 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		})
 	ctx.Step(`^I pipe in the file(?: named)? "(.*)"$`, stdin)
 	ctx.Step(`^(?:a|the) (directory|file)(?: named)? "(.*)" should( not)? exist$`, fileExists)
-	ctx.Step(`^(?:a|the) (directory|file)(?: named)? "(.*)" does not exist$`, fileNotExists)
 	ctx.Step(`^I set the environment variable "(.*)" to "(.*)"$`, setEnvVar)
 	ctx.Step(`^I append "(.*)" to the environment variable "(.*)"$`, appendEnvVar)
 	ctx.Step(`^I run the following (?:commands|script):$`, runScript)

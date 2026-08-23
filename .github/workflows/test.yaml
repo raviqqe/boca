@@ -78,6 +78,8 @@ jobs:
         with:
           go-version: stable
       - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+      - run: go install ./cmd/agoa
+      - run: bundler
       - run: |
           for variable in ${{ join(matrix.dependent.environment, ' ') }}; do
             echo $variable >> ${{ github.env }}
@@ -85,8 +87,6 @@ jobs:
         working-directory: dependents/${{ matrix.dependent.directory }}
       - run: ${{ matrix.dependent.build }}
         working-directory: dependents/${{ matrix.dependent.directory }}
-      - run: go install ./cmd/agoa
-      - run: bundler
       - if: matrix.runner == 'go'
         run: agoa --strict
         working-directory: dependents/${{ matrix.dependent.directory }}

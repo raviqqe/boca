@@ -99,6 +99,30 @@ Feature: File
       foo
       """
 
+  Rule: Remove files
+
+    Scenario Outline: Remove a file and a directory
+      Given a file named "foo.txt" with "foo"
+      And a directory named "bar"
+      When I remove <article> file named "foo.txt"
+      And I remove <article> directory "bar"
+      Then a file named "foo.txt" should not exist
+      And a directory named "bar" should not exist
+
+      Examples:
+        | article |
+        | a       |
+        | the     |
+
+    Scenario: Remove a directory with a file
+      Given a file named "foo/bar.txt" with "foo"
+      When I remove the directory "foo"
+      Then a directory named "foo" should not exist
+
+    Scenario: Remove a missing file with full force
+      When I remove a file named "foo.txt" with full force
+      Then a file named "foo.txt" should not exist
+
   Rule: Contain strings
 
     Scenario: Check a file to contain a string

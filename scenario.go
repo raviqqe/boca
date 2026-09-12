@@ -84,9 +84,7 @@ func removeFile(ctx context.Context, ty, p string, force bool) error {
 	q, err := contextWorld(ctx).path(p)
 	if err != nil {
 		return err
-	}
-
-	if _, err := os.Lstat(q); !force && errors.Is(err, os.ErrNotExist) {
+	} else if _, err := os.Lstat(q); !force && errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("%s %q does not exist", ty, p)
 	}
 

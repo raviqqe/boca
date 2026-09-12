@@ -80,13 +80,15 @@ func createDirectory(ctx context.Context, p string) error {
 	return os.Mkdir(p, 0o700)
 }
 
-func removeFile(ctx context.Context, p string) error {
-	p, err := contextWorld(ctx).path(p)
+func removeFile(ctx context.Context, ty, p string, force bool) error {
+	q, err := contextWorld(ctx).path(p)
 	if err != nil {
 		return err
+	} else if _, err := os.Lstat(q); !force && errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("%s %q does not exist", ty, p)
 	}
 
-	return os.RemoveAll(p)
+	return os.RemoveAll(q)
 }
 
 func runCommand(ctx context.Context, successfully, line, asynchronously string) (context.Context, error) {
@@ -320,7 +322,16 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 			return createFileWithMode(ctx, p, s.Content, 0o755)
 		})
 	ctx.Step(`^a directory named "(.+)"$`, createDirectory)
-	ctx.Step(`^(?:a|the) (?:directory|file)(?: named)? "(.*)" does not exist$`, removeFile)
+	ctx.Step(
+		`^(?:a|the) (directory|file)(?: named)? "(.*)" does not exist$`,
+		func(ctx context.Context, ty, p string) error {
+			return removeFile(ctx, ty, p, true)
+		})
+	ctx.Step(
+		`^I remove (?:a|the) (directory|file)(?: named)? "(.*)"( with full force)?$`,
+		func(ctx context.Context, ty, p, force string) error {
+			return removeFile(ctx, ty, p, force != "")
+		})
 	ctx.Step("^I( successfully)? run (`.*`)( interactively| in (?:the )?background)?$", runCommand)
 	ctx.Step(`^I wait ([\d.]+) seconds? for (?:a|the) command to start up$`, waitForStartup)
 	ctx.Step(`^the exit status should( not)? be (\d+)$`, exitStatus)

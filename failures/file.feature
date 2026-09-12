@@ -38,6 +38,17 @@ Feature: File
     Given a directory named "foo"
     Then the directory named "foo" should not exist
 
+  Scenario Outline: Remove a missing file
+    When I remove <article> file named "foo.txt"
+
+    Examples:
+      | article |
+      | a       |
+      | the     |
+
+  Scenario: Remove a missing directory
+    When I remove the directory "foo"
+
   @go
   Scenario: Create a file outside the working directory
     When a file named "../foo.txt" with "foo"
@@ -68,6 +79,10 @@ Feature: File
   @go
   Scenario: Change to a directory outside the working directory
     When I cd to "../foo"
+
+  @go
+  Scenario: Remove a file outside the working directory
+    When I remove the file "../foo.txt"
 
   @go
   Scenario: Create a file with an absolute path
